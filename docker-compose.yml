@@ -1,0 +1,52 @@
+version: "2.4"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: db-odin-rm558771
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_odin
+      MYSQL_DATABASE: odin_db
+      MYSQL_USER: odin_user
+      MYSQL_PASSWORD: odin_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - odin_mysql_data:/var/lib/mysql
+    networks:
+      - odin-network
+    command: --performance_schema=off --innodb_buffer_pool_size=64M --max_connections=20
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uodin_user", "-podin_pass"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: ./odin-api
+      dockerfile: Dockerfile
+    image: odin-api-rm558771:1.0
+    container_name: app-odin-rm558771
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db-odin-rm558771:3306/odin_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: odin_user
+      SPRING_DATASOURCE_PASSWORD: odin_pass
+      JAVA_OPTS: -Xms128m -Xmx256m
+    ports:
+      - "8080:8080"
+    networks:
+      - odin-network
+
+networks:
+  odin-network:
+    driver: bridge
+
+volumes:
+  odin_mysql_data:
+    name: odin_mysql_data_rm558771

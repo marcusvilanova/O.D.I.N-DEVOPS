@@ -1,0 +1,19 @@
+GLOBAL SOLUTION 2026/1 - FIAP
+Disciplina: DevOps Tools & Cloud Computing
+Projeto: O.D.I.N. DevOps
+
+Integrantes:
+
+Nome: Marcus Vinicius Vila Nova
+RM: 558771
+Turma: 2TDS
+
+Nome: Hebert Lopes dos Santos
+RM: 563192
+Turma: 2TDS
+
+Nome: Nicolas Monteiro Ramiro
+RM: 562380
+Turma: 2TDS
+
+Curso: Analise e Desenvolvimento de Sistemas - FIAP
