@@ -26,7 +26,7 @@ A arquitetura utiliza dois containers integrados:
 
 O acesso externo à API é realizado pelo IP público da VM Azure.
 
-![Arquitetura DevOps em Nuvem - O.D.I.N.](docs/arquitetura-devops-odin.png)
+![Arquitetura DevOps em Nuvem - O.D.I.N.](arquitetura-devops-odin.png.png)
 
 ### Fluxo da arquitetura
 
