@@ -147,6 +147,8 @@ odin_mysql_data_rm558771
 ```bash
 git clone git@github.com:marcusvilanova/O.D.I.N-DEVOPS.git
 cd O.D.I.N-DEVOPS
+SSH admlnx@20.116.61.147
+Senha: Fiap@2026Devops
 ```
 
 ### 7.2 Subir os containers em segundo plano
