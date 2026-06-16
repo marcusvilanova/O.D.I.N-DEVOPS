@@ -247,68 +247,81 @@ docker container exec -i db-odin-rm558771 mysql -uodin_user -podin_pass odin_db 
 
 ### Teste interno dentro da VM Azure
 
-Os comandos abaixo utilizam `localhost`, mas devem ser executados dentro da VM Azure via SSH.
+Devem ser executados dentro da VM Azure via SSH.
 
 ### Listar missões
 
-```bash
-curl http://localhost:8080/api/missoes
-```
 
-### Criar missão
-
-```bash
-curl -X POST http://localhost:8080/api/missoes -H "Content-Type: application/json" -d '{"nome":"ODIN-VIDEO-001","objetivo":"Monitoramento orbital para demonstracao DevOps","status":"ATIVA"}'
-```
-
-### Consultar missão
-
-```bash
-curl http://localhost:8080/api/missoes/1
-```
-
-### Atualizar missão
-
-```bash
-curl -X PUT http://localhost:8080/api/missoes/1 -H "Content-Type: application/json" -d '{"nome":"ODIN-VIDEO-001","objetivo":"Monitoramento orbital atualizado para demonstracao","status":"EM_ANALISE"}'
-```
-
-### Criar alerta relacionado à missão
-
-```bash
-curl -X POST http://localhost:8080/api/alertas -H "Content-Type: application/json" -d '{"missao_id":"1","descricao":"Risco orbital identificado na demonstracao","severidade":"ALTA"}'
-```
-
-### Atualizar alerta
-
-```bash
-curl -X PUT http://localhost:8080/api/alertas/1 -H "Content-Type: application/json" -d '{"missao_id":"1","descricao":"Risco orbital atualizado apos nova analise","severidade":"CRITICA"}'
-```
-
-### Deletar alerta
-
-```bash
-curl -i -X DELETE http://localhost:8080/api/alertas/1
-```
-
----
-
-## 12. Teste externo pelo IP público da Azure
-
-A API está disponível pelo IP público da VM Azure:
-
-```text
-http://20.116.61.147:8080/api/missoes
-```
-
-Teste:
-
-```bash
+12. Testar a API pelo IP publico da Azure
 curl http://20.116.61.147:8080/api/missoes
-```
+13. Criar arquivo JSON da missao
+printf &#39;%s\n&#39; \
+&#39;{&quot;nome&quot;:&quot;ODIN-VIDEO-001&quot;,&quot;objetivo&quot;:&quot;Monitoramento orbital para demonstracao DevOps&quot;,&quot;status&quot;:&quot;ATIVA&quot;}&#39; \
+&gt; missao.json
+cat missao.json
+14. Executar CREATE de missao pela API via IP publico
+curl -X POST http://20.116.61.147:8080/api/missoes \
+-H &quot;Content-Type: application/json&quot; \
+-d @missao.json
+15. Comprovar CREATE com SELECT no banco
+docker container exec -i db-odin-rm558771 mysql -uodin_user -podin_pass odin_db \
+-e &quot;SELECT * FROM missoes;&quot;
+16. Executar READ de missao pela API via IP publico
+curl http://20.116.61.147:8080/api/missoes/1
+17. Criar arquivo JSON para UPDATE da missao
+printf &#39;%s\n&#39; \
+&#39;{&quot;nome&quot;:&quot;ODIN-VIDEO-001&quot;,&quot;objetivo&quot;:&quot;Monitoramento orbital atualizado para demonstracao&quot;,&quot;status&quot;:&quot;EM_ANALISE&quot;}&#39; \
+&gt; missao-update.json
+cat missao-update.json
+18. Executar UPDATE de missao pela API via IP publico
+curl -X PUT http://20.116.61.147:8080/api/missoes/1 \
+-H &quot;Content-Type: application/json&quot; \
+-d @missao-update.json
+19. Comprovar UPDATE da missao com SELECT no banco
+docker container exec -i db-odin-rm558771 mysql -uodin_user -podin_pass odin_db \
+-e &quot;SELECT * FROM missoes;&quot;
+20. Criar arquivo JSON do alerta relacionado a missao
+printf &#39;%s\n&#39; \
+&#39;{&quot;missao_id&quot;:&quot;1&quot;,&quot;descricao&quot;:&quot;Risco orbital identificado na demonstracao&quot;,&quot;severidade&quot;:&quot;ALTA&quot;}&#39; \
+&gt; alerta.json
+cat alerta.json
+21. Executar CREATE do alerta pela API via IP publico
+curl -X POST http://20.116.61.147:8080/api/alertas \
+-H &quot;Content-Type: application/json&quot; \
+-d @alerta.json
+22. Comprovar relacionamento entre alertas e missoes com SELECT JOIN
+docker container exec -i db-odin-rm558771 mysql -uodin_user -podin_pass odin_db \
+-e &quot;SELECT a.id, a.missao_id, m.nome AS nome_missao, a.descricao, a.severidade FROM alertas a INNER JOIN missoes m ON m.id = a.missao_id;&quot;
+23. Criar arquivo JSON para UPDATE do alerta
+printf &#39;%s\n&#39; \
+&#39;{&quot;missao_id&quot;:&quot;1&quot;,&quot;descricao&quot;:&quot;Risco orbital atualizado apos nova analise&quot;,&quot;severidade&quot;:&quot;CRITICA&quot;}&#39; \
+&gt; alerta-update.json
+cat alerta-update.json
 
-Esse acesso comprova que a solução está executando em ambiente de nuvem e não apenas em ambiente local.
-
+24. Executar UPDATE do alerta pela API via IP publico
+curl -X PUT http://20.116.61.147:8080/api/alertas/1 \
+-H &quot;Content-Type: application/json&quot; \
+-d @alerta-update.json
+25. Comprovar UPDATE do alerta com SELECT JOIN no banco
+docker container exec -i db-odin-rm558771 mysql -uodin_user -podin_pass odin_db \
+-e &quot;SELECT a.id, a.missao_id, m.nome AS nome_missao, a.descricao, a.severidade FROM alertas a INNER JOIN missoes m ON m.id = a.missao_id;&quot;
+26. Executar DELETE do alerta pela API via IP publico
+curl -i -X DELETE http://20.116.61.147:8080/api/alertas/1
+27. Comprovar DELETE do alerta com SELECT no banco
+docker container exec -i db-odin-rm558771 mysql -uodin_user -podin_pass odin_db \
+-e &quot;SELECT * FROM alertas;&quot;
+28. Demonstrar o volume nomeado do banco
+docker volume ls
+docker volume inspect odin_mysql_data_rm558771
+29. Demonstrar a rede Docker
+docker network ls
+docker network inspect odin-devops_odin-network
+30. Testar novamente o acesso pelo IP publico da Azure
+curl http://20.116.61.147:8080/api/missoes
+31. Abrir no navegador para comprovar acesso externo
+http://20.116.61.147:8080/api/missoes
+32. Conferir estado final dos containers
+docker-compose ps
 ---
 
 ## 13. Volume nomeado
